@@ -1,0 +1,19 @@
+apiVersion: datadoghq.com/v2alpha1
+kind: DatadogAgent
+metadata:
+  name: datadog
+  namespace: datadog
+spec:
+  global:
+    site: us5.datadoghq.com         # Change to your Datadog site (e.g., us3, eu1)
+    clusterName: kubernetes         # Logical cluster name in Datadog
+    credentials:
+      apiSecret:
+        secretName: datadog-secret
+        keyName: api-key
+      appSecret:
+        secretName: datadog-secret
+        keyName: app-key
+  features:
+    externalMetricsServer:
+      enabled: true
