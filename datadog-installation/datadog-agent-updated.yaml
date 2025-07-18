@@ -19,8 +19,8 @@ spec:
   override:
     clusterAgent:
       env: [{name: DD_EXTERNAL_METRICS_PROVIDER_ENABLE_DATADOGMETRIC_AUTOGEN, value: "false"}]
-      nodeSelector:
-        kubernetes.io/hostname: sonic
+#      nodeSelector:
+#        kubernetes.io/hostname: sonic
   features:
     logCollection:
       enabled: true
