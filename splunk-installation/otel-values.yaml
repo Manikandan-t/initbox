@@ -1,0 +1,121 @@
+# ==============================================================================
+# Splunk OpenTelemetry Collector Configuration for Kubernetes
+# ==============================================================================
+#
+# This configuration sends logs from Kubernetes pods to Splunk Enterprise
+# via the HTTP Event Collector (HEC)
+#
+# Before using this file:
+# 1. Create an HEC token in Splunk (Settings → Data Inputs → HTTP Event Collector)
+# 2. Get your Splunk service URL (kubectl get svc -n splunk)
+# 3. Update the values below
+# ==============================================================================
+
+# Unique identifier for your Kubernetes cluster
+# This will appear in Splunk logs to identify the source cluster
+clusterName: "your-cluster-name"  # CHANGE THIS: e.g., "production-k8s", "dev-cluster"
+
+# Configuration for your Splunk Enterprise backend
+splunkPlatform:
+  # Splunk HEC endpoint URL
+  # For in-cluster Splunk: http://splunk-s1-standalone-service.splunk.svc.cluster.local:8088/services/collector
+  # For external Splunk: https://your-splunk-url:8088/services/collector
+  endpoint: "http://splunk-s1-standalone-service.splunk.svc.cluster.local:8088/services/collector"  # CHANGE if using external Splunk
+
+  # HEC Token (get this from Splunk UI: Settings → Data Inputs → HTTP Event Collector)
+  token: "YOUR-HEC-TOKEN-HERE"  # REQUIRED: Replace with your actual HEC token
+
+  # Target Splunk index for logs
+  index: "main"  # CHANGE if using a different index
+
+  # Disable SSL verification (use for self-signed certificates or HTTP)
+  # Set to false if using properly signed HTTPS certificates
+  insecureSkipVerify: true  # Set to false for production with valid certificates
+
+  # Optional: Splunk source type
+  # source: "kube:container:log"
+
+  # Optional: Splunk source
+  # sourcetype: "_json"
+
+# Log collection configuration
+logsCollection:
+  containers:
+    enabled: true
+
+    # Filter logs by annotation
+    # When true: Only collect logs from namespaces/pods annotated with 'splunk.com/include=true'
+    # When false: Collect logs from ALL pods in the cluster
+    useSplunkIncludeAnnotation: true  # Recommended: true to avoid collecting unnecessary logs
+
+    # Optional: Exclude specific namespaces from log collection
+    # excludeNamespaces:
+    #   - kube-system
+    #   - kube-public
+
+# Cluster-level metrics and events collection
+# Enable this if you want to collect Kubernetes cluster metrics
+clusterReceiver:
+  enabled: false  # Set to true to collect cluster metrics and events
+
+# Gateway deployment for metrics processing
+# Only needed for large-scale deployments with high metric volume
+gateway:
+  enabled: false  # Set to true for gateway deployment
+
+# ==============================================================================
+# Advanced Configuration (Optional)
+# ==============================================================================
+
+# Resource limits for collector agents (DaemonSet pods)
+# Uncomment and adjust based on your cluster size and log volume
+# agent:
+#   resources:
+#     requests:
+#       cpu: 200m
+#       memory: 500Mi
+#     limits:
+#       cpu: 500m
+#       memory: 1Gi
+
+# Metrics collection (if you want to send metrics to Splunk)
+# metricsEnabled: false
+# tracesEnabled: false
+
+# Optional: Filter logs by severity level
+# logsCollection:
+#   containers:
+#     minLogLevel: "info"  # Options: debug, info, warning, error
+
+# Optional: Add custom fields to all logs
+# splunkPlatform:
+#   fields:
+#     environment: "production"
+#     region: "us-east-1"
+
+# ==============================================================================
+# Usage Instructions
+# ==============================================================================
+#
+# 1. Install using Helm:
+#
+#    helm repo add splunk-otel-collector-chart https://signalfx.github.io/splunk-otel-collector-chart
+#    helm repo update
+#    kubectl create namespace splunk-otel
+#    helm install splunk-otel-collector -f otel-values.yaml \
+#      splunk-otel-collector-chart/splunk-otel-collector -n splunk-otel
+#
+# 2. Annotate namespaces/pods to send logs (if useSplunkIncludeAnnotation: true):
+#
+#    kubectl annotate namespace your-namespace splunk.com/include=true
+#    kubectl annotate deployment your-app -n your-namespace splunk.com/include=true
+#
+# 3. Verify logs are flowing:
+#
+#    kubectl logs -n splunk-otel -l app=splunk-otel-collector-agent --tail=50
+#
+# 4. Search in Splunk:
+#
+#    index="main" cluster_name="your-cluster-name"
+#
+# ==============================================================================
