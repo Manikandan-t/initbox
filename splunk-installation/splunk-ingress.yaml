@@ -1,0 +1,42 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: splunk-ingress
+  namespace: splunk
+  annotations:
+    # Optional: Add custom annotations based on your ingress controller
+    # For NGINX Ingress Controller:
+    # nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # Optional: If you need to rewrite the path
+    # nginx.ingress.kubernetes.io/rewrite-target: /$2
+    # And change path to: /splunkui(/|$)(.*)
+
+    # Optional: Increase timeout for long-running searches
+    # nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    # nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+
+spec:
+  ingressClassName: nginx  # Change to your ingress class (e.g., nginx, traefik, alb)
+
+  # Optional: Add TLS configuration
+  # tls:
+  # - hosts:
+  #   - your-splunk-domain.com
+  #   secretName: splunk-tls-cert  # Kubernetes secret containing TLS certificate
+
+  rules:
+  - host: your-splunk-domain.com  # CHANGE THIS: Your domain name
+    http:
+      paths:
+      # Path must match the root_endpoint in splunk-standalone.yaml
+      # If root_endpoint is /splunkui, use /splunkui here
+      # If root_endpoint is not set (default /), use / here
+      - path: /splunkui
+        pathType: Prefix
+        backend:
+          service:
+            name: splunk-s1-standalone-service  # Default service name
+            port:
+              number: 8000  # Splunk web UI port

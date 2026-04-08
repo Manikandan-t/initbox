@@ -1,0 +1,37 @@
+apiVersion: enterprise.splunk.com/v4
+kind: Standalone
+metadata:
+  name: s1
+  namespace: splunk
+spec:
+  # Optional: Customize the web UI root path
+  # Remove or comment out this section if you want to use the default root path (/)
+  # If enabled, access Splunk at https://your-domain/splunkui instead of /
+  defaults: |
+    splunk:
+      web:
+        root_endpoint: /splunkui
+
+  # Persistent storage for index data (/opt/splunk/var)
+  # This stores all your indexed log data
+  # Size this based on your retention requirements
+  varVolumeStorageConfig:
+    storageClassName: local-path  # Change to your storage class (e.g., nfs, ebs, etc.)
+    storageCapacity: 40Gi         # Adjust based on your data volume and retention
+
+  # Persistent storage for configuration (/opt/splunk/etc)
+  # This stores apps, configurations, saved searches, etc.
+  # 4Gi is usually sufficient unless you have many custom apps
+  etcVolumeStorageConfig:
+    storageClassName: local-path  # Change to your storage class
+    storageCapacity: 4Gi          # 4Gi is typically sufficient
+
+  # Optional: Add resource limits for production
+  # Uncomment and adjust as needed
+  # resources:
+  #   requests:
+  #     memory: "4Gi"
+  #     cpu: "2"
+  #   limits:
+  #     memory: "8Gi"
+  #     cpu: "4"
